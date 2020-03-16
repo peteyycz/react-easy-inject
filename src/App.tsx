@@ -1,26 +1,32 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useCallback } from "react";
+import { view as v } from "@risingstack/react-easy-state";
+import { injectStores, Stores, SC_t } from "./Injector";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+type CounterPageProps = { greeting: string } & SC_t;
 
-export default App;
+const CounterPage: React.FC<CounterPageProps> = v(
+  ({ [Stores.Counter]: counterStore, greeting }) => {
+    const onChange = useCallback(
+      ev => {
+        if (ev?.target?.value) {
+          counterStore.counter = ev.target.value;
+        }
+      },
+      [counterStore.counter]
+    );
+
+    return (
+      <div>
+        <h1>{greeting}!</h1>
+        <span>Counter is {counterStore.counter}</span>
+        <input type="number" value={counterStore.counter} onChange={onChange} />
+      </div>
+    );
+  }
+);
+
+const CounterPageInjected = injectStores(CounterPage, Stores.Counter);
+
+export const App = () => {
+  return <CounterPageInjected greeting="Hello" />;
+};
